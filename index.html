@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STANG KINGS | Cancún</title>
+<link rel="icon" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --black: #000000;
+  --dark-1: #050508;
+  --dark-2: #0a0a0f;
+  --dark-3: #111118;
+  --dark-4: #1a1a24;
+  --cyan: #00f0ff;
+  --cyan-dim: #00f0ff44;
+  --blue: #0066ff;
+  --blue-dim: #0066ff33;
+  --red: #ff0040;
+  --red-dim: #ff004033;
+  --white: #e8e8f0;
+  --gray: #6a6a80;
+  --glow-cyan: 0 0 20px #00f0ff66, 0 0 40px #00f0ff33, 0 0 80px #00f0ff11;
+  --glow-blue: 0 0 20px #0066ff66, 0 0 40px #0066ff33;
+  --glow-red: 0 0 20px #ff004066, 0 0 40px #ff004033;
+}
+
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--cyan) var(--dark-2); }
+html::-webkit-scrollbar { width: 6px; }
+html::-webkit-scrollbar-track { background: var(--dark-2); }
+html::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 3px; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ═══════════════════════════════════════════
+   CUSTOM CURSOR
+   ═══════════════════════════════════════════ */
+.cursor-dot {
+  position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+  background: var(--cyan); border-radius: 50%; pointer-events: none;
+  z-index: 99999; mix-blend-mode: difference;
+  transition: transform 0.1s ease;
+}
+.cursor-ring {
+  position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+  border: 1px solid var(--cyan); border-radius: 50%; pointer-events: none;
+  z-index: 99998; opacity: 0.5;
+  transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+.cursor-ring.hover { width: 60px; height: 60px; opacity: 1; border-color: var(--red); }
+
+@media (max-width: 768px) {
+  .cursor-dot, .cursor-ring { display: none; }
+  body { cursor: auto; }
+}
+
+/* ═══════════════════════════════════════════
+   LOADING SCREEN
+   ═══════════════════════════════════════════ */
+.loader {
+  position: fixed; inset: 0; z-index: 100000;
+  background: var(--black);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+.loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-logo {
+  width: 120px; height: 120px;
+  animation: loaderPulse 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px var(--cyan));
+}
+.loader-bar-container {
+  width: 200px; height: 2px; background: var(--dark-3);
+  margin-top: 30px; position: relative; overflow: hidden;
+}
+.loader-bar {
+  height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--cyan));
+  box-shadow: var(--glow-cyan);
+  transition: width 0.3s ease;
+}
+.loader-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; color: var(--cyan); margin-top: 15px;
+  letter-spacing: 3px; opacity: 0.7;
+}
+@keyframes loaderPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px var(--cyan)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 40px var(--cyan)) drop-shadow(0 0 80px var(--blue)); }
+}
+
+/* ═══════════════════════════════════════════
+   SCAN LINES OVERLAY
+   ═══════════════════════════════════════════ */
+.scanlines {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 240, 255, 0.008) 2px,
+    rgba(0, 240, 255, 0.008) 4px
+  );
+}
+
+/* ═══════════════════════════════════════════
+   PARTICLE CANVAS
+   ═══════════════════════════════════════════ */
+#particles {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  padding: 20px 40px; display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.5s ease;
+  background: transparent;
+}
+.nav.scrolled {
+  background: rgba(5, 5, 8, 0.9);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--cyan-dim);
+  padding: 12px 40px;
+  box-shadow: 0 4px 30px rgba(0, 240, 255, 0.05);
+}
+.nav-logo {
+  width: 50px; height: 50px; transition: all 0.5s ease;
+  filter: drop-shadow(0 0 10px var(--cyan));
+}
+.nav.scrolled .nav-logo { width: 38px; height: 38px; }
+.nav-links { display: flex; gap: 35px; list-style: none; }
+.nav-links a {
+  color: var(--white); text-decoration: none;
+  font-family: 'Orbitron', sans-serif; font-size: 11px;
+  letter-spacing: 3px; text-transform: uppercase;
+  position: relative; padding: 5px 0;
+  transition: color 0.3s ease;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 0; height: 1px; background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  transition: width 0.4s ease;
+}
+.nav-links a:hover { color: var(--cyan); }
+.nav-links a:hover::after { width: 100%; }
+
+.nav-toggle {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: none; padding: 5px;
+}
+.nav-toggle span {
+  width: 25px; height: 2px; background: var(--cyan);
+  transition: all 0.3s ease;
+}
+.nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+@media (max-width: 768px) {
+  .nav { padding: 15px 20px; }
+  .nav.scrolled { padding: 10px 20px; }
+  .nav-toggle { display: flex; }
+  .nav-links {
+    position: fixed; top: 0; right: -100%;
+    width: 70%; height: 100vh;
+    flex-direction: column; justify-content: center; align-items: center;
+    background: rgba(5, 5, 8, 0.97);
+    backdrop-filter: blur(30px);
+    transition: right 0.5s ease;
+    gap: 30px;
+  }
+  .nav-links.open { right: 0; }
+  .nav-links a { font-size: 14px; letter-spacing: 5px; }
+}
+
+/* ═══════════════════════════════════════════
+   HERO SECTION
+   ═══════════════════════════════════════════ */
+.hero {
+  position: relative; width: 100%; height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hero-video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0.4;
+  filter: brightness(0.5) contrast(1.2) saturate(0.8);
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 30%, var(--black) 80%),
+    linear-gradient(180deg, transparent 60%, var(--black) 100%),
+    linear-gradient(0deg, var(--black) 0%, transparent 30%);
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--cyan-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.06;
+  animation: gridScroll 20s linear infinite;
+}
+@keyframes gridScroll {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
+}
+
+.hero-content {
+  position: relative; z-index: 10; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+.hero-logo {
+  width: 150px; height: 150px; margin-bottom: 25px;
+  filter: drop-shadow(0 0 30px var(--cyan)) drop-shadow(0 0 60px var(--blue));
+  animation: heroLogoIn 1.5s ease-out 2.5s both;
+}
+@keyframes heroLogoIn {
+  0% { opacity: 0; transform: scale(0.5) rotateY(180deg); filter: drop-shadow(0 0 0px var(--cyan)); }
+  50% { opacity: 1; transform: scale(1.1) rotateY(0deg); }
+  100% { opacity: 1; transform: scale(1) rotateY(0deg); filter: drop-shadow(0 0 30px var(--cyan)) drop-shadow(0 0 60px var(--blue)); }
+}
+
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(3rem, 10vw, 8rem);
+  font-weight: 900; letter-spacing: 15px;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--white) 0%, var(--cyan) 50%, var(--blue) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  animation: heroTitleIn 1s ease-out 2.8s both;
+  text-shadow: none;
+}
+.hero-title::before {
+  content: 'STANG KINGS';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--white), var(--cyan), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: glitchText 4s infinite;
+  opacity: 0.5;
+}
+@keyframes heroTitleIn {
+  0% { opacity: 0; transform: translateY(40px); letter-spacing: 50px; }
+  100% { opacity: 1; transform: translateY(0); letter-spacing: 15px; }
+}
+@keyframes glitchText {
+  0%, 90%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  91% { clip-path: inset(20% 0 60% 0); transform: translate(-3px, 2px); }
+  93% { clip-path: inset(60% 0 10% 0); transform: translate(3px, -1px); }
+  95% { clip-path: inset(40% 0 30% 0); transform: translate(-2px, 1px); }
+  97% { clip-path: inset(10% 0 70% 0); transform: translate(2px, -2px); }
+}
+
+.hero-subtitle {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1rem, 3vw, 2rem);
+  letter-spacing: 25px; color: var(--cyan);
+  margin-top: 10px; position: relative;
+  animation: heroSubIn 1s ease-out 3.2s both;
+  text-shadow: 0 0 30px var(--cyan), 0 0 60px var(--cyan);
+}
+.hero-subtitle::after {
+  content: '';
+  position: absolute; left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(180deg, transparent 0%, var(--cyan) 50%, transparent 100%);
+  opacity: 0.1;
+  animation: scanMove 3s linear infinite;
+}
+@keyframes scanMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+@keyframes heroSubIn {
+  0% { opacity: 0; letter-spacing: 60px; }
+  100% { opacity: 1; letter-spacing: 25px; }
+}
+
+.hero-tagline {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px; color: var(--gray);
+  letter-spacing: 5px; margin-top: 25px;
+  animation: fadeInUp 1s ease-out 3.5s both;
+}
+
+.hero-cta {
+  margin-top: 40px;
+  padding: 15px 50px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px; letter-spacing: 5px;
+  color: var(--cyan); background: transparent;
+  border: 1px solid var(--cyan);
+  text-decoration: none;
+  position: relative; overflow: hidden;
+  animation: fadeInUp 1s ease-out 3.8s both;
+  transition: all 0.4s ease;
+  cursor: none;
+  text-transform: uppercase;
+}
+.hero-cta::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--cyan); opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.hero-cta:hover { color: var(--black); box-shadow: var(--glow-cyan); }
+.hero-cta:hover::before { opacity: 1; }
+.hero-cta span { position: relative; z-index: 1; }
+.hero-cta-pulse {
+  position: absolute; inset: -2px;
+  border: 1px solid var(--cyan);
+  animation: ctaPulse 2s ease-in-out infinite;
+}
+@keyframes ctaPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0; transform: scale(1.08); }
+}
+
+.hero-scroll {
+  position: absolute; bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  animation: fadeInUp 1s ease-out 4s both;
+}
+.hero-scroll-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 4px; color: var(--gray);
+  writing-mode: vertical-rl;
+}
+.hero-scroll-line {
+  width: 1px; height: 40px; background: linear-gradient(180deg, var(--cyan), transparent);
+  animation: scrollLine 2s ease-in-out infinite;
+}
+@keyframes scrollLine {
+  0%, 100% { transform: scaleY(1); opacity: 1; }
+  50% { transform: scaleY(0.5); opacity: 0.3; }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   SECTION COMMONS
+   ═══════════════════════════════════════════ */
+section {
+  position: relative; z-index: 10;
+  padding: 120px 40px;
+}
+.section-header {
+  text-align: center; margin-bottom: 80px;
+}
+.section-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 6px; color: var(--cyan);
+  display: flex; align-items: center; justify-content: center; gap: 15px;
+  margin-bottom: 15px;
+}
+.section-label::before, .section-label::after {
+  content: ''; width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan));
+}
+.section-label::after {
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800; letter-spacing: 8px;
+  background: linear-gradient(135deg, var(--white), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.section-line {
+  width: 60px; height: 2px; margin: 20px auto 0;
+  background: linear-gradient(90deg, var(--blue), var(--cyan), var(--blue));
+  box-shadow: var(--glow-cyan);
+}
+
+.reveal { opacity: 0; transform: translateY(50px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══════════════════════════════════════════
+   ABOUT SECTION
+   ═══════════════════════════════════════════ */
+.about {
+  background:
+    radial-gradient(ellipse at 20% 50%, var(--blue-dim) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, var(--cyan-dim) 0%, transparent 50%),
+    var(--dark-1);
+}
+.about-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+}
+.about-text p {
+  font-size: 18px; line-height: 1.8;
+  color: var(--gray); margin-bottom: 20px;
+  font-weight: 400;
+}
+.about-text p strong { color: var(--cyan); font-weight: 600; }
+
+.about-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 25px;
+}
+.stat-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(0, 240, 255, 0.1);
+  padding: 35px 25px; text-align: center;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: all 0.5s ease;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.stat-card:hover { border-color: var(--cyan); transform: translateY(-5px); }
+.stat-card:hover::before { opacity: 1; }
+.stat-number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem; font-weight: 800;
+  color: var(--cyan);
+  text-shadow: 0 0 30px var(--cyan-dim);
+}
+.stat-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 4px; color: var(--gray);
+  margin-top: 8px; text-transform: uppercase;
+}
+.stat-icon {
+  font-size: 24px; margin-bottom: 10px; display: block;
+  filter: drop-shadow(0 0 10px var(--cyan));
+}
+
+@media (max-width: 768px) {
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  section { padding: 80px 20px; }
+}
+
+/* ═══════════════════════════════════════════
+   GALLERY SECTION
+   ═══════════════════════════════════════════ */
+.gallery { background: var(--black); }
+.gallery-grid {
+  max-width: 1400px; margin: 0 auto;
+  columns: 4; column-gap: 12px;
+}
+.gallery-item {
+  break-inside: avoid; margin-bottom: 12px;
+  position: relative; overflow: hidden;
+  cursor: none;
+  border: 1px solid transparent;
+  transition: border-color 0.4s ease;
+}
+.gallery-item::before {
+  content: ''; position: absolute; inset: 0; z-index: 2;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.7) 100%);
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.gallery-item::after {
+  content: ''; position: absolute; inset: -2px; z-index: 1;
+  border: 2px solid var(--cyan);
+  box-shadow: var(--glow-cyan), inset var(--glow-cyan);
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.gallery-item:hover { border-color: var(--cyan); }
+.gallery-item:hover::before { opacity: 1; }
+.gallery-item:hover::after { opacity: 1; }
+.gallery-item:hover img { transform: scale(1.05); filter: brightness(1.1) saturate(1.2); }
+.gallery-item:hover .gallery-overlay { opacity: 1; transform: translateY(0); }
+
+.gallery-item img {
+  width: 100%; display: block;
+  transition: transform 0.6s ease, filter 0.6s ease;
+  filter: brightness(0.85) saturate(0.9);
+}
+.gallery-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 20px; z-index: 3;
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.4s ease;
+}
+.gallery-overlay span {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px; letter-spacing: 3px; color: var(--cyan);
+  text-transform: uppercase;
+}
+
+@media (max-width: 1024px) { .gallery-grid { columns: 3; } }
+@media (max-width: 768px) { .gallery-grid { columns: 2; column-gap: 8px; } .gallery-item { margin-bottom: 8px; } }
+@media (max-width: 480px) { .gallery-grid { columns: 2; } }
+
+/* ═══════════════════════════════════════════
+   LIGHTBOX
+   ═══════════════════════════════════════════ */
+.lightbox {
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(0,0,0,0.95);
+  backdrop-filter: blur(30px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: all 0.4s ease;
+}
+.lightbox.active { opacity: 1; visibility: visible; }
+.lightbox img {
+  max-width: 90vw; max-height: 85vh;
+  object-fit: contain;
+  border: 1px solid var(--cyan-dim);
+  box-shadow: 0 0 60px rgba(0, 240, 255, 0.1);
+  animation: lightboxIn 0.5s ease-out;
+}
+@keyframes lightboxIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.lightbox-close {
+  position: absolute; top: 30px; right: 30px;
+  width: 50px; height: 50px;
+  background: none; border: 1px solid var(--cyan-dim);
+  color: var(--cyan); font-size: 24px;
+  cursor: none; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s ease;
+}
+.lightbox-close:hover { background: var(--cyan); color: var(--black); }
+.lightbox-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 50px; height: 80px;
+  background: rgba(0,240,255,0.05); border: 1px solid var(--cyan-dim);
+  color: var(--cyan); font-size: 20px;
+  cursor: none; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s ease;
+}
+.lightbox-nav:hover { background: var(--cyan); color: var(--black); }
+.lightbox-prev { left: 20px; }
+.lightbox-next { right: 20px; }
+.lightbox-counter {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 4px; color: var(--gray);
+}
+
+/* ═══════════════════════════════════════════
+   VIDEO SECTION
+   ═══════════════════════════════════════════ */
+.video-section {
+  background:
+    radial-gradient(ellipse at 50% 50%, var(--blue-dim) 0%, transparent 60%),
+    var(--dark-1);
+  display: flex; flex-direction: column; align-items: center;
+}
+.video-wrapper {
+  max-width: 1000px; width: 100%; position: relative;
+  margin: 0 auto;
+}
+.video-frame {
+  position: relative; padding: 3px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue), var(--cyan));
+  animation: borderGlow 3s ease-in-out infinite;
+}
+@keyframes borderGlow {
+  0%, 100% { box-shadow: 0 0 20px var(--cyan-dim), 0 0 40px var(--blue-dim); }
+  50% { box-shadow: 0 0 40px var(--cyan-dim), 0 0 80px var(--blue-dim), 0 0 120px rgba(0,102,255,0.1); }
+}
+.video-frame video {
+  width: 100%; display: block; background: var(--black);
+}
+.video-frame::before, .video-frame::after {
+  content: ''; position: absolute; width: 20px; height: 20px;
+  border: 2px solid var(--cyan); z-index: 2;
+}
+.video-frame::before { top: -8px; left: -8px; border-right: none; border-bottom: none; }
+.video-frame::after { bottom: -8px; right: -8px; border-left: none; border-top: none; }
+.video-hud {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 15px; padding: 0 5px;
+}
+.video-hud-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 3px; color: var(--gray);
+}
+.video-hud-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
+  animation: recBlink 1.5s ease-in-out infinite;
+}
+@keyframes recBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* ═══════════════════════════════════════════
+   CONTACT SECTION
+   ═══════════════════════════════════════════ */
+.contact {
+  background:
+    radial-gradient(ellipse at 50% 100%, var(--cyan-dim) 0%, transparent 50%),
+    var(--dark-1);
+}
+.contact-grid {
+  max-width: 1000px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+}
+.contact-info h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem; letter-spacing: 3px;
+  color: var(--white); margin-bottom: 20px;
+}
+.contact-info p {
+  font-size: 16px; line-height: 1.8; color: var(--gray);
+  margin-bottom: 30px;
+}
+.social-links { display: flex; gap: 15px; }
+.social-link {
+  width: 50px; height: 50px;
+  border: 1px solid var(--cyan-dim);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cyan); text-decoration: none;
+  font-size: 18px;
+  transition: all 0.4s ease;
+  cursor: none;
+}
+.social-link:hover {
+  background: var(--cyan); color: var(--black);
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-3px);
+}
+
+.contact-form { display: flex; flex-direction: column; gap: 20px; }
+.form-group { position: relative; }
+.form-group input, .form-group textarea {
+  width: 100%; padding: 15px 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif; font-size: 16px;
+  outline: none; transition: all 0.4s ease;
+  cursor: none;
+}
+.form-group textarea { resize: vertical; min-height: 120px; }
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 20px var(--cyan-dim), inset 0 0 20px rgba(0, 240, 255, 0.03);
+}
+.form-group label {
+  position: absolute; left: 20px; top: 15px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 2px; color: var(--gray);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+.form-group input:focus ~ label,
+.form-group input:not(:placeholder-shown) ~ label,
+.form-group textarea:focus ~ label,
+.form-group textarea:not(:placeholder-shown) ~ label {
+  top: -10px; left: 15px; font-size: 10px; color: var(--cyan);
+  background: var(--dark-1); padding: 0 5px;
+}
+.form-submit {
+  padding: 15px 40px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px; letter-spacing: 5px;
+  color: var(--black); background: var(--cyan);
+  border: none; text-transform: uppercase;
+  position: relative; overflow: hidden;
+  transition: all 0.4s ease;
+  cursor: none;
+}
+.form-submit:hover {
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-2px);
+}
+.form-submit::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.form-submit:hover::after { transform: translateX(100%); }
+
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 50px; }
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+.footer {
+  position: relative; z-index: 10;
+  text-align: center; padding: 40px;
+  border-top: 1px solid rgba(0, 240, 255, 0.08);
+  background: var(--dark-1);
+}
+.footer-logo { width: 60px; margin-bottom: 15px; opacity: 0.6; }
+.footer p {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 4px; color: var(--gray);
+}
+.footer-line {
+  width: 200px; height: 1px; margin: 15px auto;
+  background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+}
+
+/* ═══════════════════════════════════════════
+   HORIZONTAL SEPARATORS
+   ═══════════════════════════════════════════ */
+.separator {
+  position: relative; z-index: 10;
+  height: 100px; display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.separator-line {
+  width: 80%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan-dim), var(--cyan), var(--cyan-dim), transparent);
+}
+.separator-diamond {
+  position: absolute;
+  width: 8px; height: 8px;
+  background: var(--cyan);
+  transform: rotate(45deg);
+  box-shadow: var(--glow-cyan);
+}
+
+/* ═══════════════════════════════════════════
+   GLITCH UTILITY
+   ═══════════════════════════════════════════ */
+.glitch-hover:hover {
+  animation: glitchHover 0.3s linear;
+}
+@keyframes glitchHover {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -2px); }
+  60% { transform: translate(-1px, -1px); }
+  80% { transform: translate(1px, 1px); }
+  100% { transform: translate(0); }
+}
+
+/* Corner decorations */
+.corner-decor {
+  position: absolute; width: 30px; height: 30px;
+}
+.corner-decor--tl { top: 0; left: 0; border-top: 1px solid var(--cyan-dim); border-left: 1px solid var(--cyan-dim); }
+.corner-decor--tr { top: 0; right: 0; border-top: 1px solid var(--cyan-dim); border-right: 1px solid var(--cyan-dim); }
+.corner-decor--bl { bottom: 0; left: 0; border-bottom: 1px solid var(--cyan-dim); border-left: 1px solid var(--cyan-dim); }
+.corner-decor--br { bottom: 0; right: 0; border-bottom: 1px solid var(--cyan-dim); border-right: 1px solid var(--cyan-dim); }
+</style>
+</head>
+<body>
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- LOADING SCREEN -->
+<div class="loader" id="loader">
+  <img src="logo.png" alt="SK" class="loader-logo">
+  <div class="loader-bar-container">
+    <div class="loader-bar" id="loaderBar"></div>
+  </div>
+  <div class="loader-text" id="loaderText">INICIALIZANDO...</div>
+</div>
+
+<!-- SCAN LINES -->
+<div class="scanlines"></div>
+
+<!-- PARTICLES -->
+<canvas id="particles"></canvas>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&#10094;</button>
+  <button class="lightbox-nav lightbox-next" id="lightboxNext">&#10095;</button>
+  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-counter" id="lightboxCounter"></div>
+</div>
+
+<!-- NAVIGATION -->
+<nav class="nav" id="nav">
+  <img src="logo.png" alt="Stang Kings" class="nav-logo">
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#hero">Inicio</a></li>
+    <li><a href="#about">Nosotros</a></li>
+    <li><a href="#gallery">Galería</a></li>
+    <li><a href="#video">Video</a></li>
+    <li><a href="#contact">Únete</a></li>
+  </ul>
+  <button class="nav-toggle" id="navToggle">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     HERO SECTION
+     ═══════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="carros.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <img src="logo.png" alt="Stang Kings Logo" class="hero-logo">
+    <h1 class="hero-title">STANG KINGS</h1>
+    <p class="hero-subtitle">CANCÚN</p>
+    <p class="hero-tagline">// LA HERMANDAD DEL MUSTANG //</p>
+    <a href="#contact" class="hero-cta">
+      <div class="hero-cta-pulse"></div>
+      <span>ÚNETE AL CLUB</span>
+    </a>
+  </div>
+
+  <div class="hero-scroll">
+    <span class="hero-scroll-text">SCROLL</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- SEPARATOR -->
+<div class="separator">
+  <div class="separator-line"></div>
+  <div class="separator-diamond"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ABOUT SECTION
+     ═══════════════════════════════════════════ -->
+<section class="about" id="about">
+  <div class="section-header reveal">
+    <div class="section-label">// 001</div>
+    <h2 class="section-title">QUIÉNES SOMOS</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>
+        Somos <strong>Stang Kings</strong>, la hermandad de Mustangs más grande de Cancún.
+        Nacimos de la pasión por el rugido del motor, las líneas agresivas y la cultura
+        que rodea al Ford Mustang en todas sus generaciones.
+      </p>
+      <p>
+        Desde clásicos 67' hasta los más recientes Shelby GT500, nuestro club reúne a los
+        verdaderos fanáticos del pony car más icónico del mundo. Organizamos rodadas,
+        exhibiciones, encuentros y convivencias donde el Mustang es el protagonista.
+      </p>
+      <p>
+        <strong>No es solo un auto. Es un estilo de vida.</strong>
+      </p>
+    </div>
+
+    <div class="about-stats reveal" style="transition-delay: 0.2s;">
+      <div class="stat-card">
+        <span class="stat-icon">&#9733;</span>
+        <div class="stat-number" data-target="50">0</div>
+        <div class="stat-label">Miembros</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">&#9881;</span>
+        <div class="stat-number" data-target="120">0</div>
+        <div class="stat-label">Eventos</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">&#9878;</span>
+        <div class="stat-number" data-target="5">0</div>
+        <div class="stat-label">Años</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">&#9830;</span>
+        <div class="stat-number" data-target="60">0</div>
+        <div class="stat-label">Mustangs</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEPARATOR -->
+<div class="separator">
+  <div class="separator-line"></div>
+  <div class="separator-diamond"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     GALLERY SECTION
+     ═══════════════════════════════════════════ -->
+<section class="gallery" id="gallery">
+  <div class="section-header reveal">
+    <div class="section-label">// 002</div>
+    <h2 class="section-title">GALERÍA</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="gallery-item reveal" onclick="openLightbox(0)">
+      <img src="625333521_818771811177612_225712911065650742_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(1)">
+      <img src="620006462_810960778625382_5432021451563972735_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(2)">
+      <img src="619319079_809934155394711_4007399927843609062_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(3)">
+      <img src="619240299_812262581828535_6512345902420427922_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(4)">
+      <img src="619204374_806858642368929_3142092683232098234_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(5)">
+      <img src="619138312_806854472369346_5609324801151074515_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(6)">
+      <img src="619003347_808860225502104_2599551769201017174_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(7)">
+      <img src="618992724_806854955702631_4982559953473840708_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(8)">
+      <img src="618935314_806860315702095_2012288417709222630_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(9)">
+      <img src="618923248_806857715702355_8128758330410359277_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(10)">
+      <img src="611992408_796721416715985_2820808566646756802_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(11)">
+      <img src="606842588_788839180837542_550136348480742449_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(12)">
+      <img src="605380629_788842584170535_411688052940968349_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(13)">
+      <img src="605109338_786619471059513_2576739108120551755_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(14)">
+      <img src="604720184_791744423880351_8305706079509108964_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(15)">
+      <img src="621749323_810957428625717_667119851508047959_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(16)">
+      <img src="600236951_785502051171255_1748955618062269817_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+    <div class="gallery-item reveal" onclick="openLightbox(17)">
+      <img src="599951180_785497964504997_4231412781820760523_n.jpg" alt="Stang Kings" loading="lazy">
+      <div class="gallery-overlay"><span>Stang Kings</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SEPARATOR -->
+<div class="separator">
+  <div class="separator-line"></div>
+  <div class="separator-diamond"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIDEO SECTION
+     ═══════════════════════════════════════════ -->
+<section class="video-section" id="video">
+  <div class="section-header reveal">
+    <div class="section-label">// 003</div>
+    <h2 class="section-title">EN ACCIÓN</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="video-wrapper reveal" style="transition-delay: 0.2s;">
+    <div class="video-frame">
+      <div class="corner-decor corner-decor--tl"></div>
+      <div class="corner-decor corner-decor--tr"></div>
+      <div class="corner-decor corner-decor--bl"></div>
+      <div class="corner-decor corner-decor--br"></div>
+      <video controls preload="metadata" playsinline>
+        <source src="carros.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="video-hud">
+      <span class="video-hud-text">SK_CANCUN_FOOTAGE.MP4</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="video-hud-dot"></div>
+        <span class="video-hud-text">REC</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEPARATOR -->
+<div class="separator">
+  <div class="separator-line"></div>
+  <div class="separator-diamond"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CONTACT SECTION
+     ═══════════════════════════════════════════ -->
+<section class="contact" id="contact">
+  <div class="section-header reveal">
+    <div class="section-label">// 004</div>
+    <h2 class="section-title">ÚNETE</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <h3>FORMA PARTE DE LA FAMILIA</h3>
+      <p>
+        ¿Tienes un Mustang y vives en Cancún o la Riviera Maya?
+        Únete a la hermandad más grande de Mustangs en el Caribe Mexicano.
+        Rodadas, exhibiciones, convivencias y mucho más te esperan.
+      </p>
+      <p style="color: var(--cyan); font-weight: 600;">
+        // Solo Mustangs. Solo familia. Solo reyes.
+      </p>
+      <div class="social-links" style="margin-top: 30px;">
+        <a href="#" class="social-link" aria-label="Facebook">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="Instagram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="TikTok">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.89a8.28 8.28 0 004.76 1.5V6.94a4.84 4.84 0 01-1-.25z"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="WhatsApp">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <form class="contact-form reveal" style="transition-delay: 0.2s;" onsubmit="handleSubmit(event)">
+      <div class="form-group">
+        <input type="text" id="name" placeholder=" " required>
+        <label for="name">NOMBRE</label>
+      </div>
+      <div class="form-group">
+        <input type="text" id="mustang" placeholder=" " required>
+        <label for="mustang">TU MUSTANG (AÑO / MODELO)</label>
+      </div>
+      <div class="form-group">
+        <input type="tel" id="phone" placeholder=" " required>
+        <label for="phone">TELÉFONO / WHATSAPP</label>
+      </div>
+      <div class="form-group">
+        <textarea id="message" rows="4" placeholder=" "></textarea>
+        <label for="message">MENSAJE</label>
+      </div>
+      <button type="submit" class="form-submit">ENVIAR SOLICITUD</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <img src="logo.png" alt="SK" class="footer-logo">
+  <div class="footer-line"></div>
+  <p>STANG KINGS CANCÚN &copy; 2025 // TODOS LOS DERECHOS RESERVADOS</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ─── GALLERY IMAGES ─── */
+  const galleryImages = [
+    '625333521_818771811177612_225712911065650742_n.jpg',
+    '620006462_810960778625382_5432021451563972735_n.jpg',
+    '619319079_809934155394711_4007399927843609062_n.jpg',
+    '619240299_812262581828535_6512345902420427922_n.jpg',
+    '619204374_806858642368929_3142092683232098234_n.jpg',
+    '619138312_806854472369346_5609324801151074515_n.jpg',
+    '619003347_808860225502104_2599551769201017174_n.jpg',
+    '618992724_806854955702631_4982559953473840708_n.jpg',
+    '618935314_806860315702095_2012288417709222630_n.jpg',
+    '618923248_806857715702355_8128758330410359277_n.jpg',
+    '611992408_796721416715985_2820808566646756802_n.jpg',
+    '606842588_788839180837542_550136348480742449_n.jpg',
+    '605380629_788842584170535_411688052940968349_n.jpg',
+    '605109338_786619471059513_2576739108120551755_n.jpg',
+    '604720184_791744423880351_8305706079509108964_n.jpg',
+    '621749323_810957428625717_667119851508047959_n.jpg',
+    '600236951_785502051171255_1748955618062269817_n.jpg',
+    '599951180_785497964504997_4231412781820760523_n.jpg'
+  ];
+
+  /* ─── LOADER ─── */
+  const loader = document.getElementById('loader');
+  const loaderBar = document.getElementById('loaderBar');
+  const loaderText = document.getElementById('loaderText');
+  const loadMessages = [
+    'INICIALIZANDO SISTEMA...',
+    'CARGANDO MOTOR V8...',
+    'INYECTANDO COMBUSTIBLE...',
+    'ENCENDIENDO TURBOS...',
+    'SISTEMA LISTO.'
+  ];
+  let loadProgress = 0;
+  const loadInterval = setInterval(() => {
+    loadProgress += Math.random() * 20 + 5;
+    if (loadProgress >= 100) loadProgress = 100;
+    loaderBar.style.width = loadProgress + '%';
+    const msgIndex = Math.min(Math.floor(loadProgress / 25), loadMessages.length - 1);
+    loaderText.textContent = loadMessages[msgIndex];
+    if (loadProgress >= 100) {
+      clearInterval(loadInterval);
+      setTimeout(() => loader.classList.add('hidden'), 500);
+    }
+  }, 300);
+
+  /* ─── CUSTOM CURSOR ─── */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`;
+  });
+
+  function animateCursor() {
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
+    ring.style.transform = `translate(${ringX - 20}px, ${ringY - 20}px)`;
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  document.querySelectorAll('a, button, .gallery-item, .social-link, .stat-card').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+  });
+
+  /* ─── NAVIGATION ─── */
+  const nav = document.getElementById('nav');
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 80);
+  });
+
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('active');
+    navLinks.classList.toggle('open');
+  });
+
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navToggle.classList.remove('active');
+      navLinks.classList.remove('open');
+    });
+  });
+
+  /* ─── PARTICLES ─── */
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 2 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.4;
+      this.speedY = (Math.random() - 0.5) * 0.4;
+      this.opacity = Math.random() * 0.5 + 0.1;
+      this.hue = Math.random() > 0.5 ? 187 : 220;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+        this.reset();
+      }
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, ${this.opacity})`;
+      ctx.fill();
+    }
+  }
+
+  const particleCount = Math.min(60, Math.floor(window.innerWidth / 20));
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0, 240, 255, ${0.06 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+  /* ─── SCROLL REVEAL ─── */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  /* ─── STAT COUNTERS ─── */
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const counters = entry.target.querySelectorAll('.stat-number');
+        counters.forEach(counter => {
+          const target = parseInt(counter.dataset.target);
+          const increment = target / 60;
+          let current = 0;
+          const updateCounter = () => {
+            current += increment;
+            if (current < target) {
+              counter.textContent = Math.floor(current) + '+';
+              requestAnimationFrame(updateCounter);
+            } else {
+              counter.textContent = target + '+';
+            }
+          };
+          updateCounter();
+        });
+        counterObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const statsSection = document.querySelector('.about-stats');
+  if (statsSection) counterObserver.observe(statsSection);
+
+  /* ─── LIGHTBOX ─── */
+  let currentLightbox = 0;
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCounter = document.getElementById('lightboxCounter');
+
+  window.openLightbox = function(index) {
+    currentLightbox = index;
+    lightboxImg.src = galleryImages[index];
+    lightboxCounter.textContent = `${index + 1} / ${galleryImages.length}`;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  document.getElementById('lightboxClose').addEventListener('click', () => {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+
+  document.getElementById('lightboxPrev').addEventListener('click', () => {
+    currentLightbox = (currentLightbox - 1 + galleryImages.length) % galleryImages.length;
+    lightboxImg.src = galleryImages[currentLightbox];
+    lightboxCounter.textContent = `${currentLightbox + 1} / ${galleryImages.length}`;
+  });
+
+  document.getElementById('lightboxNext').addEventListener('click', () => {
+    currentLightbox = (currentLightbox + 1) % galleryImages.length;
+    lightboxImg.src = galleryImages[currentLightbox];
+    lightboxCounter.textContent = `${currentLightbox + 1} / ${galleryImages.length}`;
+  });
+
+  lightbox.addEventListener('click', e => {
+    if (e.target === lightbox) {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') { lightbox.classList.remove('active'); document.body.style.overflow = ''; }
+    if (e.key === 'ArrowLeft') document.getElementById('lightboxPrev').click();
+    if (e.key === 'ArrowRight') document.getElementById('lightboxNext').click();
+  });
+
+  /* ─── FORM ─── */
+  window.handleSubmit = function(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.form-submit');
+    btn.textContent = '// ENVIADO //';
+    btn.style.background = '#00f0ff';
+    btn.style.color = '#000';
+    setTimeout(() => {
+      btn.textContent = 'ENVIAR SOLICITUD';
+      btn.style.background = '';
+      btn.style.color = '';
+      e.target.reset();
+    }, 3000);
+  };
+
+  /* ─── STAGGER GALLERY REVEALS ─── */
+  document.querySelectorAll('.gallery-item.reveal').forEach((item, i) => {
+    item.style.transitionDelay = `${i * 0.06}s`;
+  });
+
+})();
+</script>
+</body>
+</html>
